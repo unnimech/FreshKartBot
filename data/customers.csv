@@ -1,0 +1,13 @@
+customer_id,name,city,tier,pass_member,refunds_30d,fraud_score
+C01,Aarav Mehta,Bengaluru,regular,n,0,0.05
+C02,Priya Nair,Bengaluru,gold,y,1,0.10
+C03,Rohan Kulkarni,Pune,regular,n,2,0.20
+C04,Sneha Reddy,Hyderabad,platinum,y,0,0.02
+C05,Imran Sheikh,Hyderabad,regular,n,5,0.40
+C06,Vikram Rao,Bengaluru,regular,n,3,0.85
+C07,Ananya Iyer,Bengaluru,gold,y,1,0.08
+C08,Deepak Joshi,Pune,regular,n,0,0.15
+C09,Farah Khan,Hyderabad,gold,y,2,0.30
+C10,Karthik Subramanian,Bengaluru,platinum,y,0,0.03
+C11,Neha Deshmukh,Pune,regular,n,3,0.70
+C12,Suresh Babu,Hyderabad,regular,n,1,0.12

@@ -1,0 +1,26 @@
+dark_store,sku,name,category,stock,batch,expiry_date
+BLR-KOR-04,SKU-DAI-0101,Amul Taaza Milk 500ml,dairy,48,B2610A,2026-10-14
+BLR-KOR-04,SKU-BAK-0102,Britannia Brown Bread 400g,bakery,20,B2610B,2026-10-15
+BLR-KOR-04,SKU-FNV-0103,Banana Robusta 1kg,fruits_veg,35,B2610C,2026-10-16
+BLR-KOR-04,SKU-FRZ-0104,Frozen Peas 500g,frozen,40,B2606F,2027-01-10
+BLR-KOR-04,SKU-DAI-0105,Amul Lassi 200ml,dairy,26,B2610D,2026-10-19
+BLR-KOR-04,SKU-DAI-0106,Eggs 12pc,dairy,31,B2610E,2026-10-22
+BLR-KOR-04,SKU-CAF-0107,Cold Coffee Cup,cafe_prepared,12,B2612C,2026-10-13
+HYD-GAC-03,SKU-DAI-0201,Mother Dairy Curd 400g,dairy,12,B2609K,2026-10-11
+HYD-GAC-03,SKU-FNV-0202,Tomato 1kg,fruits_veg,60,B2610T,2026-10-17
+HYD-GAC-03,SKU-BBY-0203,Nestle Lactogen 1 400g,baby_care,8,B2607N,2027-02-20
+HYD-GAC-03,SKU-HOM-0204,Surf Excel Liquid 1L,home_care,40,B2511S,2028-01-01
+HYD-GAC-03,SKU-MEA-0205,Chicken Breast 500g,meat_fish,18,B2612M,2026-10-13
+BLR-HSR-07,SKU-BBY-0301,Nestle Lactogen 2 400g,baby_care,6,B2605L,2026-10-09
+BLR-HSR-07,SKU-BBY-0302,Cerelac Wheat Apple 300g,baby_care,14,B2606M,2027-03-15
+BLR-HSR-07,SKU-BAK-0303,Sourdough Loaf,bakery,10,B2611S,2026-10-14
+BLR-HSR-07,SKU-OTC-0304,Crocin Advance 15 tabs,otc_pharmacy,70,B2603C,2028-03-31
+PUN-BAN-05,SKU-DAI-0401,Britannia Cheese Slices 200g,dairy,22,B2608C,2026-12-05
+PUN-BAN-05,SKU-BAK-0402,Whole Wheat Bread 400g,bakery,9,B2610W,2026-10-14
+PUN-BAN-05,SKU-FRZ-0403,McCain French Fries 420g,frozen,17,B2607F,2027-04-01
+PUN-KOT-02,SKU-DAI-0501,Epigamia Greek Yogurt 90g,dairy,0,B2610G,2026-10-20
+PUN-KOT-02,SKU-DAI-0502,Amul Butter 100g,dairy,33,B2608B,2027-02-01
+PUN-KOT-02,SKU-OTC-0503,Strepsils Orange 8 lozenges,otc_pharmacy,55,B2604S,2028-06-30
+HYD-KPH-01,SKU-DAI-0601,Paneer 200g,dairy,30,B2610P,2026-10-18
+HYD-KPH-01,SKU-FNV-0602,Coriander Bunch,fruits_veg,44,B2612V,2026-10-14
+BLR-IND-02,SKU-CAF-0701,Chicken Biryani Bowl,cafe_prepared,15,B2612X,2026-10-13

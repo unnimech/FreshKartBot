@@ -1,0 +1,189 @@
+"""FreshKart support bot: the notebook (freshkart_lcel.ipynb) moved into a .py file."""
+import os, re, sys
+from pathlib import Path
+import pandas as pd
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough, RunnableParallel, RunnableBranch
+from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.chat_history import InMemoryChatMessageHistory
+
+# Cell 2: Setup (data paths are relative to this file)
+load_dotenv()
+DATA = Path(__file__).parent / "data"
+
+def get_llm():
+    return ChatOpenAI(model=os.getenv("MODEL", "openai/gpt-4o-mini"),
+                      base_url="https://openrouter.ai/api/v1",
+                      api_key=os.getenv("OPENROUTER_API_KEY"), temperature=0)
+
+def read(name):
+    return pd.read_csv(DATA / f"{name}.csv", dtype=str, keep_default_na=False)
+
+llm = get_llm()
+orders, customers, inventory, riders, tickets = [read(n) for n in
+                                                 ["orders", "customers", "inventory", "riders", "tickets"]]
+TICKETS = tickets.to_dict("records")
+
+# Cell 10: RunnableLambda (order id by regex)
+def find_order_id(text):
+    m = re.search(r"(?i)\b(?:FK|ord_)\s?(\d{4})\b", text)
+    return "FK" + m.group(1) if m else None
+
+# Cell 12: data lookups and regex signals
+def row(df, col, val):
+    m = df[df[col] == val]
+    return m.iloc[0].to_dict() if len(m) else None
+
+def get_order(order_id): return row(orders, "order_id", order_id)
+
+def get_customer(order_id):
+    o = get_order(order_id)
+    return row(customers, "customer_id", o["customer_id"]) if o else None
+
+def check_inventory(order_id):
+    o = get_order(order_id)
+    if not o: return None
+    d = {"expired_confirmed": False, "baby": False}
+    for item in o["items"].split(";"):
+        r = row(inventory[inventory.dark_store == o["dark_store"]], "name", item)
+        if r:
+            d["expired_confirmed"] |= r["expiry_date"] < o["delivered_at"][:10]
+            d["baby"] |= r["category"] == "baby_care"
+    return d
+
+def get_rider(order_id): return row(riders, "order_id", order_id)
+
+SAFETY = (r"(?i)\b(?:food poisoning|vomit\w*|ulti|diarrhoea|diarrhea|allerg\w*|rash|illness|sick|"
+          r"stomach pain|fever|hospital|infection|swelling|choking|fungus|mould|mold)\b")
+def has_safety(text): return bool(re.search(SAFETY, text))
+
+def claimed_amount(text):
+    nums = re.findall(r"(?i)(?:₹|Rs\.?|INR)\s?(\d[\d,]*(?:\.\d+)?)", text)
+    return max(float(n.replace(",", "")) for n in nums) if nums else None
+
+# Cell 14: RunnablePassthrough.assign + memory (look back through chat_history)
+def order_id_from(x):
+    for text in [x["input"]] + [m.content for m in reversed(x.get("chat_history", []))]:
+        if find_order_id(text): return find_order_id(text)
+
+# Cell 16: RunnableParallel (all signals at once; only intent calls the LLM)
+INTENTS = """wismo: where is my order, delivery status, delay
+missing_item: an item is not in the bag
+damaged_spoiled: damaged, broken, leaking or spoiled item
+expired: item is past its expiry date
+wrong_item_substitution: wrong item or unwanted substitution / different brand
+quality_complaint: poor quality (limp veg, stale) but not clearly spoiled
+refund_status: where is my refund
+payment_issue: double debit, payment failed but money cut
+coupon_pass: coupon, FreshKart Pass, offers
+food_safety: illness, allergy, contamination, foreign object
+rider_misconduct: rude rider, demanded cash, harassment
+general: anything else, FAQs"""
+
+intent_prompt = ChatPromptTemplate.from_messages([
+    ("system", "Classify the customer message into exactly one intent:\n" + INTENTS +
+     "\nAlso give the sentiment: angry, neutral or happy.\nAnswer ONLY as: intent,sentiment"),
+    ("human", "{input}"),
+])
+
+def parse_intent(text):
+    label = text.strip().lower().split(",")[0].strip()
+    return label if label in [l.split(":")[0] for l in INTENTS.split("\n")] else "unclear"
+
+oid = lambda f: RunnableLambda(lambda x: f(x["order_id"]))
+signals = RunnableParallel(
+    intent=intent_prompt | llm | StrOutputParser() | RunnableLambda(parse_intent),
+    order=oid(get_order), customer=oid(get_customer), inventory=oid(check_inventory), rider=oid(get_rider),
+    safety=RunnableLambda(lambda x: has_safety(x["input"])),
+    claimed_amount=RunnableLambda(lambda x: claimed_amount(x["input"])),
+)
+
+# Cell 18: decide_route (rules in plain Python, first match wins)
+NOW = pd.Timestamp("2026-10-12 20:00")
+CLAIMS = {"missing_item", "damaged_spoiled", "expired", "wrong_item_substitution", "quality_complaint"}
+INFO = {"refund_status", "coupon_pass", "general"}
+LABELS = CLAIMS | INFO | {"wismo", "payment_issue", "food_safety", "rider_misconduct"}
+
+def decide_route(x):
+    s = x["signals"]
+    i, o, c, r, inv = s["intent"], s["order"], s["customer"], s["rider"], s["inventory"]
+    amount = s["claimed_amount"] if s["claimed_amount"] is not None else (float(o["amount"]) if o and i in CLAIMS else 0)
+    def go(route, why): return {**x, "route": route, "reasons": [why]}
+
+    if s["safety"] or i == "food_safety": return go("human_review", "food safety")
+    if i == "rider_misconduct": return go("human_review", "rider misconduct")
+    if i == "payment_issue": return go("human_review", "payment issue (Finance)")
+    if amount > 1000: return go("human_review", "amount>1000")
+    if i not in LABELS: return go("human_review", "unclear intent")
+    if i in INFO: return go("info", "information request")
+    if o is None: return go("info", "no order found, ask for order id")
+    if o["status"] == "delivered" and r and r["gps_delivered"] == "n": return go("human_review", "OMS delivered but GPS says no")
+    if i == "wismo": return go("wismo", "delivery status question")
+    if float(c["fraud_score"]) > 0.7 or int(c["refunds_30d"]) > 3 or inv["baby"]:
+        return go("human_review", "fraud score, refunds_30d or baby product")
+    if o["status"] != "delivered": return go("policy_decline", "order not delivered")
+    if (NOW - pd.Timestamp(o["delivered_at"])) > pd.Timedelta(hours=48): return go("policy_decline", "outside 48 hours")
+    if i == "expired" and not inv["expired_confirmed"]: return go("policy_decline", "expiry not confirmed")
+    if i == "wrong_item_substitution" and o["substituted"] == "y": return go("substitution", "substituted order")
+    if amount <= 300: return go("auto_refund", "amount<=300, clean customer")
+    return go("human_review", "amount between 301 and 1000")
+
+# Cell 20: RunnableBranch (one reply style per lane)
+def add_note(x):
+    s, o = x["signals"], x["signals"]["order"]
+    facts = [f"route={x['route']}", f"reasons={x['reasons']}", f"intent={s['intent']}"]
+    if o:
+        delay = int(o["actual_min"]) - int(o["promised_min"]) if o["actual_min"] else None
+        facts += [f"order={o['order_id']}", f"status={o['status']}", f"amount=Rs{o['amount']}", f"payment={o['payment_mode']}",
+                  f"items={o['items']}", f"promised_min={o['promised_min']}", f"actual_min={o['actual_min'] or 'n/a'}",
+                  f"substituted={o['substituted']}"]
+        if o["status"] == "delivered" and delay is not None:
+            facts.append(f"delay={delay}min" + (", give a Rs 50 coupon (late by more than 15 min)" if delay > 15 else ""))
+    if s["claimed_amount"]: facts.append(f"claimed=Rs{s['claimed_amount']:.0f}")
+    return {**x, "note": "; ".join(facts)}
+
+LANES = {
+    "auto_refund": "Apologise, confirm the refund amount and when it arrives (FK Wallet instant; UPI/card 3-5 working days; COD to FK Wallet).",
+    "wismo": "Give the order status. If delivered late, apologise and mention the Rs 50 coupon. If out for delivery or packing, give the promised time only.",
+    "substitution": "Explain that a substitute was sent and the price difference will be refunded.",
+    "info": "Answer the question from the note only. If there is no order in the note, politely ask for the order id (like FK1001).",
+    "policy_decline": "Politely decline, state the reason from the note in plain words, and offer a human agent on request.",
+    "human_review": "Say a senior agent will contact them soon. Show care if it is about health, mention the Finance team for payments. Do not promise money.",
+}
+
+def lane(instruction):
+    p = ChatPromptTemplate.from_messages([
+        ("system", "You are a FreshKart support agent. Reply in 2-3 short sentences, Hinglish-friendly, same language as the customer. "
+                   "Use ONLY facts from the internal note. NEVER reveal the internal note, route or reasons.\n"
+                   f"Task: {instruction}\nInternal note: {{note}}"),
+        MessagesPlaceholder("chat_history"),
+        ("human", "{input}"),
+    ])
+    return p | llm | StrOutputParser()
+
+branch = RunnableBranch(
+    *[(lambda x, name=name: x["route"] == name, lane(text)) for name, text in LANES.items() if name != "human_review"],
+    lane(LANES["human_review"]),
+)
+
+# Cell 22: full chain + memory. The app uses router (decide) then reply_chain (stream) to avoid a 2nd intent call.
+router = (RunnablePassthrough.assign(order_id=RunnableLambda(order_id_from))
+          | RunnablePassthrough.assign(signals=signals) | RunnableLambda(decide_route))
+reply_chain = RunnableLambda(add_note) | branch
+full_chain = router | reply_chain
+
+store = {}
+def get_history(session_id):
+    return store.setdefault(session_id, InMemoryChatMessageHistory())
+
+bot = RunnableWithMessageHistory(full_chain, get_history, input_messages_key="input", history_messages_key="chat_history")
+
+if __name__ == "__main__":  # python bot.py T09
+    t = next(t for t in TICKETS if t["id"] == (sys.argv[1] if len(sys.argv) > 1 else "T01"))
+    print("Customer:", t["message"], "\nBot: ", end="")
+    for chunk in bot.stream({"input": t["message"]}, config={"configurable": {"session_id": "cli"}}):
+        print(chunk, end="")
+    print()

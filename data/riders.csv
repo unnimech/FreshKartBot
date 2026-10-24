@@ -1,0 +1,13 @@
+rider_id,order_id,gps_delivered,complaints_30d
+R01,FK1001,y,0
+R02,FK1003,y,1
+R03,FK1006,n,0
+R04,FK1007,y,2
+R05,FK1008,y,0
+R06,FK1010,y,4
+R07,FK1011,y,0
+R08,FK1012,y,1
+R09,FK1014,n,0
+R10,FK1017,y,0
+R11,FK1018,y,0
+R12,FK1016,y,0

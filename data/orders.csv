@@ -1,0 +1,31 @@
+order_id,customer_id,items,amount,payment_mode,status,dark_store,promised_min,actual_min,delivered_at,substituted
+FK1001,C01,Amul Taaza Milk 500ml;Britannia Brown Bread 400g;Banana Robusta 1kg,210,UPI,delivered,BLR-KOR-04,15,14,2026-10-12 18:40,n
+FK1002,C03,Epigamia Greek Yogurt 90g;Amul Butter 100g,380,Card,delivered,PUN-KOT-02,20,22,2026-10-12 19:05,y
+FK1003,C04,Mother Dairy Curd 400g;Tomato 1kg,245,UPI,delivered,HYD-GAC-03,18,16,2026-10-12 12:30,n
+FK1004,C07,Nestle Lactogen 2 400g;Cerelac Wheat Apple 300g,780,Card,delivered,BLR-HSR-07,16,18,2026-10-12 11:10,n
+FK1005,C08,Britannia Cheese Slices 200g;Whole Wheat Bread 400g,150,COD,delivered,PUN-BAN-05,20,19,2026-10-12 14:00,n
+FK1006,C09,Paneer 200g;Coriander Bunch;Tomato 1kg,190,UPI,out_for_delivery,HYD-KPH-01,18,,,n
+FK1007,C10,Frozen Peas 500g;Amul Lassi 200ml,260,FK_Wallet,delivered,BLR-KOR-04,15,38,2026-10-12 19:20,n
+FK1008,C12,Surf Excel Liquid 1L;Dettol Floor Cleaner 1L;Harpic Toilet Cleaner 1L;Vim Dishwash Gel 750ml;Lizol Disinfectant 2L;Comfort Fabric Conditioner 2L,1480,Card,delivered,HYD-GAC-03,22,21,2026-10-12 16:00,n
+FK1009,C02,Chicken Biryani Bowl;Raita Cup,260,UPI,delivered,BLR-IND-02,25,27,2026-10-12 13:15,n
+FK1010,C01,Eggs 12pc;Paneer 200g;Tomato 1kg,330,UPI,delivered,BLR-KOR-04,15,16,2026-10-12 18:05,n
+FK1011,C06,Amul Butter 100g;Sourdough Loaf,180,COD,delivered,BLR-HSR-07,17,15,2026-10-12 15:00,n
+FK1012,C05,Frozen Peas 500g;Croissant 2pc,150,UPI,delivered,HYD-KPH-01,19,20,2026-10-12 17:30,n
+FK1013,C09,Chicken Breast 500g;Basa Fillet 400g;Eggs 12pc,520,UPI,delivered,HYD-KPH-01,20,19,2026-10-12 10:00,n
+FK1014,C03,Strepsils Orange 8 lozenges;ORS Electral 200ml,340,Card,delivered,PUN-KOT-02,18,17,2026-10-12 18:50,n
+FK1015,C05,Banana Robusta 1kg;Tomato 1kg,120,UPI,packing,HYD-KPH-01,20,,,n
+FK1016,C07,Banana Robusta 1kg;Amul Taaza Milk 500ml,270,UPI,delivered,BLR-HSR-07,16,15,2026-10-11 09:00,n
+FK1017,C11,McCain French Fries 420g;Frozen Peas 500g,220,UPI,delivered,PUN-BAN-05,20,21,2026-10-09 18:00,n
+FK1018,C10,Cold Coffee Cup;Veg Sandwich,300,FK_Wallet,delivered,BLR-KOR-04,15,15,2026-10-12 17:00,n
+FK1019,C02,Amul Taaza Milk 500ml;Eggs 12pc,230,UPI,delivered,BLR-IND-02,18,17,2026-10-12 12:10,n
+FK1020,C08,Coriander Bunch;Tomato 1kg,90,COD,cancelled,PUN-BAN-05,,,,n
+FK1021,C04,Nestle Lactogen 1 400g,290,Card,delivered,HYD-GAC-03,18,17,2026-10-12 09:30,n
+FK1022,C01,Banana Robusta 1kg;Frozen Peas 500g,175,UPI,out_for_delivery,BLR-KOR-04,15,,,n
+FK1023,C07,Crocin Advance 15 tabs,35,UPI,packing,BLR-HSR-07,12,,,n
+FK1024,C12,Chicken Breast 500g;Eggs 12pc,410,COD,delivered,HYD-GAC-03,20,23,2026-10-11 20:30,n
+FK1025,C06,Sourdough Loaf;Croissant 2pc,200,Card,cancelled,BLR-HSR-07,,,,n
+FK1026,C10,Amul Lassi 200ml;Cold Coffee Cup,190,FK_Wallet,delivered,BLR-KOR-04,15,16,2026-10-12 19:40,n
+FK1027,C11,Paneer 200g;Amul Butter 100g,260,UPI,delivered,PUN-KOT-02,18,19,2026-10-10 12:00,n
+FK1028,C09,Tomato 1kg;Coriander Bunch,70,UPI,out_for_delivery,HYD-KPH-01,15,,,n
+FK1029,C03,Epigamia Greek Yogurt 90g;Whole Wheat Bread 400g,210,UPI,delivered,PUN-KOT-02,18,18,2026-10-12 08:45,n
+FK1030,C05,Eggs 12pc;Croissant 2pc,160,COD,delivered,HYD-KPH-01,20,22,2026-10-12 19:00,n
